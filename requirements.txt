@@ -1,0 +1,6 @@
+requests
+colorama
+pyfiglet
+prettytable
+netaddr
+redis

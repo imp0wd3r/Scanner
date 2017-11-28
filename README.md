@@ -83,7 +83,7 @@ def poc(url, params):
 
 编写一个`poc`函数：
 
-- 参数`url`为目标url，如果输入为a.com或http://a.com，则参数`url`的值为http://a.com，如果输入为https://a.com，其值为https://a.com。
+- 参数`url`为目标url，如果输入为a.com或http://a.com ，则参数`url`的值为http://a.com ，如果输入为https://a.com ，其值为https://a.com 。
 - 参数`params`为通过`--extra-params`传入的额外参数。
 - 检测结果通过`prepare_result`函数返回，第一个参数为目标url，第二个参数为检测是否成功，第三个参数为检测过程中获取的数据。
 

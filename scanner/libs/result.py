@@ -8,16 +8,26 @@ import prettytable
 from scanner.libs.log import logger
 
 
-def save_result(result, output='/tmp/result.json'):
+def save_result(pattern, result, output='/tmp/result.json'):
     """Save the result."""
 
-    table = prettytable.PrettyTable(['URL', 'plugin', 'success'])
+    if pattern == 'vuln':
+        # Vuln scan result
+        table = prettytable.PrettyTable(['URL', 'plugin', 'success'])
 
-    for data in result:
-        if data:
-            table.add_row([data['url'], data['plugin'], data['success']])
-            if data['success'] != 'Exception':
-                data['success'] = int(data['success'])
+        for data in result:
+            if data:
+                table.add_row([data['url'], data['plugin'], data['success']])
+                if data['success'] != 'Exception':
+                    data['success'] = int(data['success'])
+    else:
+        # Port scan result
+        table = prettytable.PrettyTable(['host', 'ports_open'])
+
+        for host, ports in result.iteritems():
+            ports.sort(key=int)
+            ports_str = ','.join(ports)
+            table.add_row([host, ports_str])
 
     logger.info('Here is the result: ')
     print table

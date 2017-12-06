@@ -25,9 +25,13 @@ def save_result(pattern, result, output='/tmp/result.json'):
         table = prettytable.PrettyTable(['host', 'ports_open'])
 
         for host, ports in result.iteritems():
-            ports.sort(key=int)
-            ports_str = ','.join(ports)
-            table.add_row([host, ports_str])
+            if ports == 'No open ports found':
+                table.add_row([host, ports])
+            else:
+                ports = list(set(ports))
+                ports.sort(key=int)
+                ports_str = ','.join(ports)
+                table.add_row([host, ports_str])
 
     logger.info('Here is the result: ')
     print table

@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import ParseError
 
 import config
 from scanner.libs.log import logger
@@ -49,20 +50,23 @@ class Masscan(object):
 
         _, stderr = process.communicate()
         if not stderr.startswith('\nStarting masscan'):
-            logger.failure(stderr)
+            logger.failure('Masscan Error\n{}'.format(stderr))
             sys.exit(1)
 
     def parse_result_xml(self):
-        tree = ET.parse(self.result_xml)
-        root = tree.getroot()
-
         result = {}
-        for host in root.iter('host'):
-            ip = host.find('address').attrib['addr']
-            port = host.find('ports').find('port').attrib['portid']
-            if result.setdefault(ip):
-                result[ip].append(port)
-            else:
-                result[ip] = [port]
+        try:
+            tree = ET.parse(self.result_xml)
+            root = tree.getroot()
+
+            for host in root.iter('host'):
+                ip = host.find('address').attrib['addr']
+                port = host.find('ports').find('port').attrib['portid']
+                if result.setdefault(ip):
+                    result[ip].append(port)
+                else:
+                    result[ip] = [port]
+        except ParseError:
+            result.update({'All targets': 'No open ports found'})
         
         return result

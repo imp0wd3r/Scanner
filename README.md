@@ -2,7 +2,7 @@
 
 [![Python 2.7](https://img.shields.io/badge/python-2.7-yellow.svg)](https://www.python.org/)
 
-PoC批量调用框架，可同时调用多个插件对多个目标进行检测。
+端口扫描 + PoC批量调用框架，可同时调用多个插件对多个目标进行检测。
 
 ## Installation
 
@@ -11,10 +11,20 @@ git clone https://github.com/imp0wd3r/Scanner
 pip install -r requirements.txt
 ```
 
+端口扫描使用的是[Masscan](https://github.com/robertdavidgraham/masscan)，编译安装后将可执行文件的路径添加到`config.py`中：
+
+```python
+MASSCAN_BIN = '/opt/masscan/bin/masscan'
+MASSCAN_RESULT_XML = '/tmp/result.xml'
+MASSCAN_RATE = 100
+MASSCAN_RETRIES = 2
+MASSCAN_WAIT = 5
+```
+
 ## Usage
 
 ```
-➜  Scanner git:(master)  python scan.py -h
+➜  Scanner git:(master) python scan.py -h
  _____                                 
 /  ___|                                
 \ `--.  ___ __ _ _ __  _ __   ___ _ __ 
@@ -24,12 +34,76 @@ pip install -r requirements.txt
                                        
                                        
 
-usage: scan.py [-h] (-u URL | -f URL_FILE) (-p PLUGIN | -d PLUGIN_DIRECTORY)
-               [--cookies COOKIES] [--user-agent USER_AGENT] [--random-agent]
-               [--proxy PROXY] [--threads THREADS] [-o OUTPUT]
-               [--extra-params EXTRA_PARAMS]
+usage: scan.py [-h] [-o OUTPUT] {port,vuln} ...
 
 My vulnerability testing framework.
+
+positional arguments:
+  {port,vuln}           Choose scan pattern
+    port                Port scan via Masscan
+    vuln                Vulnerability scan via plugins
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+output:
+  -o OUTPUT, --output OUTPUT
+                        Save result to a json file
+
+```
+
+根据命令行参数选择扫描模式
+
+### 端口扫描
+
+```
+➜  Scanner git:(master) python scan.py port -h
+ _____                                 
+/  ___|                                
+\ `--.  ___ __ _ _ __  _ __   ___ _ __ 
+ `--. \/ __/ _` | '_ \| '_ \ / _ \ '__|
+/\__/ / (_| (_| | | | | | | |  __/ |   
+\____/ \___\__,_|_| |_|_| |_|\___|_|   
+                                       
+                                       
+
+usage: scan.py port [-h] (-p PORTS | --port-file PORT_FILE)
+                    (-t HOSTS | --host-file HOST_FILE)
+
+Port scan via Masscan
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORTS, --ports PORTS
+                        Target ports (eg: 80,443,445...)
+  --port-file PORT_FILE
+                        Port file
+  -t HOSTS, --hosts HOSTS
+                        Target hosts (eg: 192.168.1.1/24,192.168.2.1)
+  --host-file HOST_FILE
+                        Host file
+
+```
+
+### 漏洞扫描（调用PoC插件）
+
+```
+➜  Scanner git:(master) python scan.py vuln -h
+ _____                                 
+/  ___|                                
+\ `--.  ___ __ _ _ __  _ __   ___ _ __ 
+ `--. \/ __/ _` | '_ \| '_ \ / _ \ '__|
+/\__/ / (_| (_| | | | | | | |  __/ |   
+\____/ \___\__,_|_| |_|_| |_|\___|_|   
+                                       
+                                       
+
+usage: scan.py vuln [-h] (-u URL | -f URL_FILE)
+                    (-p PLUGIN | -d PLUGIN_DIRECTORY) [--cookies COOKIES]
+                    [--user-agent USER_AGENT] [--random-agent] [--proxy PROXY]
+                    [--threads THREADS] [--extra-params EXTRA_PARAMS]
+
+Vulnerability scan via plugins
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -49,10 +123,6 @@ request:
   --proxy PROXY         Use a proxy to connect to the target URL
   --threads THREADS     Max number of concurrent HTTP(s) requests (default 5)
 
-output:
-  -o OUTPUT, --output OUTPUT
-                        Save result to a json file
-
 extra_params:
   --extra-params EXTRA_PARAMS
                         Extra params for plugins (eg: "{'user':'xxx',
@@ -62,7 +132,33 @@ extra_params:
 
 ## Examples
 
-### 插件示例
+### 端口扫描
+
+**注**：Masscan需要使用sudo或root权限执行
+
+指定端口和目标
+
+```bash
+sudo python scan.py port -p 80,443 -t 192.168.1.0/24
+```
+
+扫描UDP端口
+
+```bash
+sudo python scan.py port -p 'U:53' -t 114.114.114.114
+```
+
+从文件读取端口和目标
+
+```bash
+sudo python scan.py port --port-file /tmp/ports.txt --host-file /tmp/hosts.txt
+```
+
+目标为IP地址或IP段，不可为域名，更多端口及目标格式详见 https://github.com/robertdavidgraham/masscan/wiki
+
+### 漏洞扫描
+
+插件示例
 
 ```python
 from urlparse import urlparse
@@ -90,7 +186,7 @@ def poc(url, params):
 调用单个插件对多个目标进行检测：
 
 ```bash
-python scan.py -f url.txt -p plugins/redis_unauth -o /tmp/result.json
+python scan.py vuln -f url.txt -p plugins/redis_unauth -o /tmp/result.json
 ```
 
 **注**：`-p`后的插件名字不要带`.py`后缀
@@ -98,15 +194,23 @@ python scan.py -f url.txt -p plugins/redis_unauth -o /tmp/result.json
 调用多个插件对多个目标进行检测：
 
 ```bash
-python scan.py -f url.txt -d plugins/site_info -o /tmp/result.json
+python scan.py vuln -f url.txt -d plugins/site_info -o /tmp/result.json
 ```
 
 ## Screenshot
 
-![example](example.png)
+端口扫描
+
+![example-port.png](example-port.png)
+
+漏洞扫描
+
+![example-vuln.png](example-vuln.png)
 
 ## Reference
 
 https://github.com/knownsec/Pocsuite
 
 https://github.com/mitsuhiko/pluginbase
+
+https://github.com/robertdavidgraham/masscan

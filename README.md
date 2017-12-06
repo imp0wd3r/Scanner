@@ -11,7 +11,9 @@ git clone https://github.com/imp0wd3r/Scanner
 pip install -r requirements.txt
 ```
 
-端口扫描使用的是[Masscan](https://github.com/robertdavidgraham/masscan)，编译安装后将可执行文件的路径添加到`config.py`中：
+**注**：由于Masscan需要root权限运行，所以非root用户还需要使用`sudo pip install -r requirements.txt`来为root安装相关依赖。
+
+在`config.py`中配置[Masscan](https://github.com/robertdavidgraham/masscan)和[MongoDB](https://www.mongodb.com/)：
 
 ```python
 MASSCAN_BIN = '/opt/masscan/bin/masscan'
@@ -19,6 +21,11 @@ MASSCAN_RESULT_XML = '/tmp/result.xml'
 MASSCAN_RATE = 100
 MASSCAN_RETRIES = 2
 MASSCAN_WAIT = 5
+
+MONGODB_URI = 'mongodb://localhost:27017'
+MONGODB_DATABASE = 'scanner'
+MONGODB_PORT_COLLECTION = 'port'
+MONGODB_VULN_COLLECTION = 'vuln'
 ```
 
 ## Usage
@@ -34,21 +41,17 @@ MASSCAN_WAIT = 5
                                        
                                        
 
-usage: scan.py [-h] [-o OUTPUT] {port,vuln} ...
+usage: scan.py [-h] {port,vuln} ...
 
 My vulnerability testing framework.
 
 positional arguments:
-  {port,vuln}           Choose scan pattern
-    port                Port scan via Masscan
-    vuln                Vulnerability scan via plugins
+  {port,vuln}  Choose scan pattern
+    port       Port scan via Masscan
+    vuln       Vulnerability scan via plugins
 
 optional arguments:
-  -h, --help            show this help message and exit
-
-output:
-  -o OUTPUT, --output OUTPUT
-                        Save result to a json file
+  -h, --help   show this help message and exit
 
 ```
 
@@ -68,7 +71,7 @@ output:
                                        
 
 usage: scan.py port [-h] (-p PORTS | --port-file PORT_FILE)
-                    (-t HOSTS | --host-file HOST_FILE)
+                    (-t HOSTS | --host-file HOST_FILE) [-o OUTPUT] [--db]
 
 Port scan via Masscan
 
@@ -82,6 +85,11 @@ optional arguments:
                         Target hosts (eg: 192.168.1.1/24,192.168.2.1)
   --host-file HOST_FILE
                         Host file
+
+output:
+  -o OUTPUT, --output OUTPUT
+                        Save result to a json file
+  --db                  Save to MongoDB in config.py
 
 ```
 
@@ -102,6 +110,7 @@ usage: scan.py vuln [-h] (-u URL | -f URL_FILE)
                     (-p PLUGIN | -d PLUGIN_DIRECTORY) [--cookies COOKIES]
                     [--user-agent USER_AGENT] [--random-agent] [--proxy PROXY]
                     [--threads THREADS] [--extra-params EXTRA_PARAMS]
+                    [-o OUTPUT] [--db]
 
 Vulnerability scan via plugins
 
@@ -122,11 +131,16 @@ request:
   --random-agent        Use randomly selected HTTP User-Agent header value
   --proxy PROXY         Use a proxy to connect to the target URL
   --threads THREADS     Max number of concurrent HTTP(s) requests (default 5)
-
+  
 extra_params:
   --extra-params EXTRA_PARAMS
                         Extra params for plugins (eg: "{'user':'xxx',
                         'pass':'xxx'}")
+
+output:
+  -o OUTPUT, --output OUTPUT
+                        Save result to a json file
+  --db                  Save to MongoDB in config.py
 
 ```
 
@@ -136,19 +150,19 @@ extra_params:
 
 **注**：Masscan需要使用sudo或root权限执行
 
-指定端口和目标
+指定端口和目标：
 
 ```bash
 sudo python scan.py port -p 80,443 -t 192.168.1.0/24
 ```
 
-扫描UDP端口
+扫描UDP端口：
 
 ```bash
 sudo python scan.py port -p 'U:53' -t 114.114.114.114
 ```
 
-从文件读取端口和目标
+从文件读取端口和目标：
 
 ```bash
 sudo python scan.py port --port-file /tmp/ports.txt --host-file /tmp/hosts.txt
@@ -158,7 +172,7 @@ sudo python scan.py port --port-file /tmp/ports.txt --host-file /tmp/hosts.txt
 
 ### 漏洞扫描
 
-插件示例
+插件示例：
 
 ```python
 from urlparse import urlparse
@@ -199,11 +213,11 @@ python scan.py vuln -f url.txt -d plugins/site_info -o /tmp/result.json
 
 ## Screenshot
 
-端口扫描
+端口扫描：
 
 ![example-port.png](example-port.png)
 
-漏洞扫描
+漏洞扫描：
 
 ![example-vuln.png](example-vuln.png)
 

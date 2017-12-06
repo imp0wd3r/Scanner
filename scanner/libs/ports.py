@@ -48,9 +48,13 @@ class Masscan(object):
             shell=True
         )
 
-        _, stderr = process.communicate()
-        if not stderr.startswith('\nStarting masscan'):
-            logger.failure('Masscan Error\n{}'.format(stderr))
+        try:
+            _, stderr = process.communicate()
+            if not stderr.startswith('\nStarting masscan'):
+                logger.failure('Masscan Error\n{}'.format(stderr))
+                sys.exit(1)
+        except KeyboardInterrupt:
+            logger.failure('User aborted')
             sys.exit(1)
 
     def parse_result_xml(self):
@@ -67,6 +71,6 @@ class Masscan(object):
                 else:
                     result[ip] = [port]
         except ParseError:
-            result.update({'All targets': 'No open ports found'})
+            pass
         
         return result

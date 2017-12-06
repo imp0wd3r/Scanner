@@ -51,7 +51,7 @@ def main():
         ms.scan()
         result = ms.parse_result_xml()
     
-    save_result(args.pattern, result, args.output)
+    save_result(args.pattern, result, args.output, args.db)
 
 
 if __name__ == '__main__':

@@ -28,6 +28,12 @@ def parse_cmd_options():
     hosts.add_argument('--host-file', dest='host_file',
                        help='Host file')
 
+    output = port.add_argument_group('output')
+    output.add_argument('-o', '--output', dest='output', default='',
+                        help='Save result to a json file')
+    output.add_argument('--db', dest='db', action='store_true', default=False,
+                        help='Save to MongoDB in config.py')
+
     # Vuln scan arguments
     url = vuln.add_mutually_exclusive_group(required=True)
     url.add_argument('-u', '--url', dest='url',
@@ -57,9 +63,11 @@ def parse_cmd_options():
     extra_params.add_argument('--extra-params', dest='extra_params',
                               help='Extra params for plugins (eg: "{\'user\':\'xxx\', \'pass\':\'xxx\'}")')
 
-    output = parser.add_argument_group('output')
-    output.add_argument('-o', '--output', dest='output', default='/tmp/result.json',
+    output = vuln.add_argument_group('output')
+    output.add_argument('-o', '--output', dest='output', default='',
                         help='Save result to a json file')
+    output.add_argument('--db', dest='db', action='store_true', default=False,
+                        help='Save to MongoDB in config.py')
 
     args = parser.parse_args()
 

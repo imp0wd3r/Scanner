@@ -1,6 +1,6 @@
 # Scanner 
 
-[![Python 2.7](https://img.shields.io/badge/python-2.7-yellow.svg)](https://www.python.org/)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/)
 
 端口扫描 + PoC批量调用框架，可同时调用多个插件对多个目标进行检测。
 

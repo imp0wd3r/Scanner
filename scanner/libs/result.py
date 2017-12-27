@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import inspect
 from pprint import pformat
@@ -33,12 +32,12 @@ def save_result(pattern, result, output='', db=False):
         if not result:
             table.add_row(['All targets', 'No open ports found'])
             logger.info('Here is the result: ')
-            print table
+            print(table)
             return
 
         db_result = []
 
-        for host, ports in result.iteritems():
+        for host, ports in result.items():
             db_result.append({
                 'host': host,
                 'ports': ports 
@@ -49,7 +48,7 @@ def save_result(pattern, result, output='', db=False):
             table.add_row([host, ports_str])
         
     logger.info('Here is the result: ')
-    print table
+    print(table)
     
     if output:
         with open(output, 'w') as f:
@@ -72,9 +71,9 @@ def save_result(pattern, result, output='', db=False):
                     query = {'host': data['host']}
                 collection.update(query, data, upsert=True)
 
-        except PyMongoError, e:
+        except PyMongoError as e:
             logger.failure('Failed to save to database\n{}'.format(e))
-            sys.exit(1)
+            os._exit(1)
 
 
 def prepare_result(url, success, data={}):

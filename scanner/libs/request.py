@@ -14,9 +14,9 @@ def patch_requests(args):
     """Patch the requests module. Based on pocsuite."""
 
     if hasattr(requests.packages.urllib3.util, '_Default'):
-        requests.packages.urllib3.util._Default = None
+        requests.packages.urllib3.util._Default = 0
     else:
-        requests.packages.urllib3.util.timeout._Default = None
+        requests.packages.urllib3.util.timeout._Default = 0
 
     def set_verify_to_false():
         def cert_verify(self, conn, url, verify, cert):

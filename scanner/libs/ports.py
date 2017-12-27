@@ -1,4 +1,4 @@
-import sys
+import os
 import subprocess
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
@@ -50,12 +50,12 @@ class Masscan(object):
 
         try:
             _, stderr = process.communicate()
-            if not stderr.startswith('\nStarting masscan'):
+            if not stderr.startswith(b'\nStarting masscan'):
                 logger.failure('Masscan Error\n{}'.format(stderr))
-                sys.exit(1)
+                os._exit(1)
         except KeyboardInterrupt:
             logger.failure('User aborted')
-            sys.exit(1)
+            os._exit(1)
 
     def parse_result_xml(self):
         result = {}

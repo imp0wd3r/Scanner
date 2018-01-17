@@ -11,7 +11,16 @@ from scanner.libs.targets import get_targets
 from scanner.libs.threads import run_threads
 from scanner.libs.ports import Masscan
 from scanner.libs.result import save_result
-from scanner.utils import std_url
+
+
+def _port_scan(args):
+    """Port scan"""
+
+    ms = Masscan(args)
+    ms.scan()
+    result = ms.parse_result_xml()
+
+    return result
 
 
 def _vuln_scan(args):
@@ -19,14 +28,7 @@ def _vuln_scan(args):
 
     patch_requests(args)
 
-    urls = []
-    if args.url:
-        urls.append(std_url(args.url))
-    else:
-        with open(args.url_file, 'r') as f:
-            for url in f:
-                urls.append(std_url(url.strip()))
-        urls = list(set(urls))
+    urls = args.url
 
     plugins = get_plugins(path=args.plugin_directory)
 
@@ -44,26 +46,16 @@ def _vuln_scan(args):
     return result
 
 
-def _port_scan(args):
-    """Port scan"""
-
-    ms = Masscan(args)
-    ms.scan()
-    result = ms.parse_result_xml()
-
-    return result
-
-
 def main():
     """Entry function"""
 
     print_banner()
     args = parse_cmd_options()
     
-    if args.pattern == 'vuln':
-        result = _vuln_scan(args)
-    else:
+    if args.pattern == 'port':
         result = _port_scan(args)
+    elif args.pattern == 'vuln':
+        result = _vuln_scan(args)
     
     save_result(args.pattern, result, args.output, args.db)
 

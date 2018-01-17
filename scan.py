@@ -9,7 +9,7 @@ from scanner.libs.request import patch_requests
 from scanner.libs.plugins import get_plugins
 from scanner.libs.targets import get_targets
 from scanner.libs.threads import run_threads
-from scanner.libs.ports import Masscan
+from scanner.libs.scan.ports import Masscan
 from scanner.libs.result import save_result
 
 
@@ -35,13 +35,29 @@ def _vuln_scan(args):
     if args.plugin:
         if os.path.dirname(args.plugin):
             plugins = get_plugins(path=os.path.dirname(args.plugin))
-            targets = get_targets(urls, [os.path.basename(args.plugin)])
+            plugins_name = [os.path.basename(args.plugin)]
         else:
-            targets = get_targets(urls, [args.plugin])
+            plugins_name = [args.plugin]
     else:
-        targets = get_targets(urls, plugins.list_plugins())
+        plugins_name = plugins.list_plugins()
 
-    result = run_threads(targets, plugins, args)
+    targets = get_targets(args.pattern, urls, plugins=plugins_name)
+
+    result = run_threads(targets, args, plugins=plugins)
+
+    return result
+
+
+def _sens_scan(args):
+    """Sens scan"""
+
+    patch_requests(args)
+
+    urls = args.url
+
+    targets = get_targets(args.pattern, urls, wordlist=args.wordlist)
+
+    result = run_threads(targets, args)
 
     return result
 
@@ -56,6 +72,8 @@ def main():
         result = _port_scan(args)
     elif args.pattern == 'vuln':
         result = _vuln_scan(args)
+    else:
+        result = _sens_scan(args)
     
     save_result(args.pattern, result, args.output, args.db)
 

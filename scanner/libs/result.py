@@ -11,41 +11,61 @@ import config
 from scanner.libs.log import logger
 
 
+def _set_port_table(result):
+    table = prettytable.PrettyTable(['host', 'ports_open'])
+
+    if not result:
+        table.add_row(['All targets', 'No open ports found'])
+        logger.info('Here is the result: ')
+        print(table)
+        os._exit(1)
+
+    for host, ports in result.items():
+        ports = list(set(ports))
+        ports.sort(key=int)
+        ports_str = ','.join(ports)
+        table.add_row([host, ports_str])
+    
+    return table
+
+
+def _set_vuln_table(result):
+    table = prettytable.PrettyTable(['URL', 'plugin', 'success'])
+
+    for data in result:
+        table.add_row([data['url'], data['plugin'], data['success']])
+        if data['success'] != 'Exception':
+            data['success'] = int(data['success'])
+
+    return table
+
+
+def _set_sens_table(result):
+    table = prettytable.PrettyTable(['URL', 'sensitive', 'status', 'length', 'redirect'])
+    if not result:
+        table.add_row(['All targets', 'No sensitive dir/file found', '', '', ''])
+        logger.info('Here is the result: ')
+        print(table)
+        os._exit(1)
+
+    result = sorted(result, key=lambda x: x['url'])
+
+    for data in result:
+        redirect = '' if not data.setdefault('redirect') else data['redirect']
+        table.add_row([data['url'], data['sens'], data['status'], data['len'], redirect])
+    
+    return table
+
+
 def save_result(pattern, result, output='', db=False):
     """Save the result."""
 
-    if pattern == 'vuln':
-        # Vuln scan result
-        table = prettytable.PrettyTable(['URL', 'plugin', 'success'])
-
-        for data in result:
-            if data:
-                table.add_row([data['url'], data['plugin'], data['success']])
-                if data['success'] != 'Exception':
-                    data['success'] = int(data['success'])
-        
-        db_result = result
+    if pattern == 'port':
+        table = _set_port_table(result)
+    elif pattern == 'vuln':
+        table = _set_vuln_table(result)
     else:
-        # Port scan result
-        table = prettytable.PrettyTable(['host', 'ports_open'])
-
-        if not result:
-            table.add_row(['All targets', 'No open ports found'])
-            logger.info('Here is the result: ')
-            print(table)
-            return
-
-        db_result = []
-
-        for host, ports in result.items():
-            db_result.append({
-                'host': host,
-                'ports': ports 
-            })
-            ports = list(set(ports))
-            ports.sort(key=int)
-            ports_str = ','.join(ports)
-            table.add_row([host, ports_str])
+        table = _set_sens_table(result)
         
     logger.info('Here is the result: ')
     print(table)
@@ -58,17 +78,32 @@ def save_result(pattern, result, output='', db=False):
         try:
             mongo_client = MongoClient(config.MONGODB_URI)
             db = mongo_client[config.MONGODB_DATABASE] 
+            db_result = result
 
-            if pattern == 'vuln':
-                collection = db[config.MONGODB_VULN_COLLECTION]
-            else:
+            if pattern == 'port':
                 collection = db[config.MONGODB_PORT_COLLECTION]
 
+                db_result = []
+
+                for host, ports in result.items():
+                    db_result.append({
+                        'host': host,
+                        'ports': ports 
+                    })
+
+            elif pattern == 'vuln':
+                collection = db[config.MONGODB_VULN_COLLECTION]
+            else:
+                collection = db[config.MONGODB_SENS_COLLECTION]
+
             for data in db_result:
-                if pattern == 'vuln':
+                if pattern == 'port':
+                    query = {'host': data['host']}
+                elif pattern == 'vuln':
                     query = {'url': data['url'], 'plugin': data['plugin']}
                 else:
-                    query = {'host': data['host']}
+                    query = {'url': data['url'], 'sens': data['sens']}
+
                 collection.update(query, data, upsert=True)
 
         except PyMongoError as e:

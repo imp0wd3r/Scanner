@@ -2,7 +2,7 @@
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/)
 
-端口扫描 + PoC批量调用框架，可同时调用多个插件对多个目标进行检测。
+端口扫描 + 敏感文件扫描 + PoC批量调用框架，可同时调用多个插件对多个目标进行检测。
 
 ## Installation
 
@@ -26,6 +26,7 @@ MONGODB_URI = 'mongodb://localhost:27017'
 MONGODB_DATABASE = 'scanner'
 MONGODB_PORT_COLLECTION = 'port'
 MONGODB_VULN_COLLECTION = 'vuln'
+MONGODB_SENS_COLLECTION = 'sens'
 ```
 
 ## Usage
@@ -41,17 +42,18 @@ MONGODB_VULN_COLLECTION = 'vuln'
                                        
                                        
 
-usage: scan.py [-h] {port,vuln} ...
+usage: scan.py [-h] {port,vuln,sens} ...
 
 My vulnerability testing framework.
 
 positional arguments:
-  {port,vuln}  Choose scan pattern
-    port       Port scan via Masscan
-    vuln       Vulnerability scan via plugins
+  {port,vuln,sens}  Choose scan pattern
+    port            Port scan via Masscan
+    vuln            Vulnerability scan via plugins
+    sens            Sensitive dir/file scan
 
 optional arguments:
-  -h, --help   show this help message and exit
+  -h, --help        show this help message and exit
 
 ```
 
@@ -144,6 +146,50 @@ output:
 
 ```
 
+### 敏感文件扫描
+
+```
+➜  Scanner git:(master) python scan.py sens -h
+ _____                                 
+/  ___|                                
+\ `--.  ___ __ _ _ __  _ __   ___ _ __ 
+ `--. \/ __/ _` | '_ \| '_ \ / _ \ '__|
+/\__/ / (_| (_| | | | | | | |  __/ |   
+\____/ \___\__,_|_| |_|_| |_|\___|_|   
+                                       
+                                       
+
+usage: scan.py sens [-h] (-u URL | -f URL_FILE) -w WORDLIST
+                    [--cookies COOKIES] [--user-agent USER_AGENT]
+                    [--random-agent] [--proxy PROXY] [--threads THREADS]
+                    [--timeout TIMEOUT] [-o OUTPUT] [--db]
+
+Sensitive dir/file scan
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -u URL, --url URL     Target URL
+  -f URL_FILE, --file URL_FILE
+                        URL file
+  -w WORDLIST, --wordlist WORDLIST
+                        Wordlist
+
+request:
+  --cookies COOKIES     HTTP cookies (eg: "{'PHPSESSIONID': 'admin'}")
+  --user-agent USER_AGENT
+                        HTTP User-Agent header value
+  --random-agent        Use randomly selected HTTP User-Agent header value
+  --proxy PROXY         Use a proxy to connect to the target URL
+  --threads THREADS     Max number of concurrent HTTP(s) requests (default 5)
+  --timeout TIMEOUT     Request timeout
+
+output:
+  -o OUTPUT, --output OUTPUT
+                        Save result to a json file
+  --db                  Save to MongoDB in config.py
+
+```
+
 ## Examples
 
 ### 端口扫描
@@ -211,6 +257,12 @@ python scan.py vuln -f url.txt -p plugins/redis_unauth -o /tmp/result.json
 python scan.py vuln -f url.txt -d plugins/site_info -o /tmp/result.json
 ```
 
+### 敏感文件扫描
+
+```bash
+python scan.py sens -f urls.txt -w wordlist.txt --threads 10
+```
+
 ## Screenshot
 
 端口扫描：
@@ -220,6 +272,10 @@ python scan.py vuln -f url.txt -d plugins/site_info -o /tmp/result.json
 漏洞扫描：
 
 ![example-vuln.png](example-vuln.png)
+
+敏感文件扫描：
+
+![example-sens.png](example-sens.png)
 
 ## Reference
 

@@ -5,7 +5,7 @@ MASSCAN_RETRIES = 2
 MASSCAN_WAIT = 5
 
 NMAP_BIN = '/usr/local/bin/nmap'
-NMAP_ARGS = '-A --host-timeout 30s'
+NMAP_ARGS = '-sV -sC --host-timeout 30s'
 
 MONGODB_URI = 'mongodb://localhost:27017'
 MONGODB_DATABASE = 'scanner'

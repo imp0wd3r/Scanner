@@ -289,3 +289,5 @@ https://github.com/knownsec/Pocsuite
 https://github.com/mitsuhiko/pluginbase
 
 https://github.com/robertdavidgraham/masscan
+
+http://xael.org/pages/python-nmap-en.html

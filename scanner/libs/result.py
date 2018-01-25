@@ -12,20 +12,19 @@ from scanner.libs.log import logger
 
 
 def _set_port_table(result):
-    table = prettytable.PrettyTable(['host', 'ports_open'])
+    table = prettytable.PrettyTable(['host', 'port', 'name', 'product', 'cpe'])
 
     if not result:
-        table.add_row(['All targets', 'No open ports found'])
+        table.add_row(['All targets', 'No open ports found', '', '', ''])
         logger.info('Here is the result: ')
         print(table)
         os._exit(1)
 
-    for host, ports in result.items():
-        ports = list(set(ports))
-        ports.sort(key=int)
-        ports_str = ','.join(ports)
-        table.add_row([host, ports_str])
+    result = sorted(result, key=lambda x: x['host'])
     
+    for data in result:
+        table.add_row([data['host'], data['port'], data['name'], data['product'], data['cpe']])
+
     return table
 
 
@@ -78,27 +77,17 @@ def save_result(pattern, result, output='', db=False):
         try:
             mongo_client = MongoClient(config.MONGODB_URI)
             db = mongo_client[config.MONGODB_DATABASE] 
-            db_result = result
 
             if pattern == 'port':
                 collection = db[config.MONGODB_PORT_COLLECTION]
-
-                db_result = []
-
-                for host, ports in result.items():
-                    db_result.append({
-                        'host': host,
-                        'ports': ports 
-                    })
-
             elif pattern == 'vuln':
                 collection = db[config.MONGODB_VULN_COLLECTION]
             else:
                 collection = db[config.MONGODB_SENS_COLLECTION]
 
-            for data in db_result:
+            for data in result:
                 if pattern == 'port':
-                    query = {'host': data['host']}
+                    query = {'host': data['host'], 'port': data['port']}
                 elif pattern == 'vuln':
                     query = {'url': data['url'], 'plugin': data['plugin']}
                 else:

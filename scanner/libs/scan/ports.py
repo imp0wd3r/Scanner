@@ -3,6 +3,8 @@ import subprocess
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
 
+import nmap
+
 import config
 from scanner.libs.log import logger
 
@@ -74,3 +76,41 @@ class Masscan(object):
             pass
         
         return result
+
+
+class Nmap(object):
+    def __init__(self, masscan_result):
+        self.nm = nmap.PortScanner(nmap_search_path=(config.NMAP_BIN,))
+        self.nmap_args = config.NMAP_ARGS
+        self.targets = []
+        self.result = []
+
+        for host, ports in masscan_result.items():
+            self.targets.append({host: ','.join(ports)})
+
+    def scan(self):
+        for target in self.targets:
+            for host, ports in target.items():
+                self.nm.scan(host, ports, self.nmap_args)
+
+                if self.nm[host].setdefault('tcp'):
+                    for port, data in self.nm[host]['tcp'].items():
+                        self.result.append({
+                            'host': host,
+                            'port': str(port),
+                            'name': data['name'],
+                            'product': data['product'],
+                            'cpe': data['cpe'][7:]
+                        })
+                
+                if self.nm[host].setdefault('udp'):
+                    for port, data in self.nm[host]['udp'].items():
+                        self.result.append({
+                            'host': host,
+                            'port': 'U:{}'.format(port),
+                            'name': data['name'],
+                            'product': data['product'],
+                            'cpe': data['cpe'][7:]
+                        })
+
+        return self.result

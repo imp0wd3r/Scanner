@@ -13,7 +13,7 @@ pip install -r requirements.txt
 
 **注**：由于Masscan需要root权限运行，所以非root用户还需要使用`sudo pip install -r requirements.txt`来为root安装相关依赖。
 
-在`config.py`中配置[Masscan](https://github.com/robertdavidgraham/masscan)和[MongoDB](https://www.mongodb.com/)：
+在`config.py`中配置[Masscan](https://github.com/robertdavidgraham/masscan)、[Nmap](https://nmap.org/)和[MongoDB](https://www.mongodb.com/)：
 
 ```python
 MASSCAN_BIN = '/opt/masscan/bin/masscan'
@@ -21,6 +21,9 @@ MASSCAN_RESULT_XML = '/tmp/result.xml'
 MASSCAN_RATE = 100
 MASSCAN_RETRIES = 2
 MASSCAN_WAIT = 5
+
+NMAP_BIN = '/usr/local/bin/nmap'
+NMAP_ARGS = '-A --host-timeout 30s'
 
 MONGODB_URI = 'mongodb://localhost:27017'
 MONGODB_DATABASE = 'scanner'
@@ -195,6 +198,8 @@ output:
 ### 端口扫描
 
 **注**：Masscan需要使用sudo或root权限执行
+
+端口扫描首先使用Masscan扫描开放的端口，然后用Nmap针对这些开放的端口进行服务识别。
 
 指定端口和目标：
 

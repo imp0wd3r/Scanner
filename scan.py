@@ -9,16 +9,21 @@ from scanner.libs.request import patch_requests
 from scanner.libs.plugins import get_plugins
 from scanner.libs.targets import get_targets
 from scanner.libs.threads import run_threads
-from scanner.libs.scan.ports import Masscan
+from scanner.libs.scan.ports import Masscan, Nmap
 from scanner.libs.result import save_result
 
 
 def _port_scan(args):
     """Port scan"""
 
+    # Masscan: Scan for open ports
     ms = Masscan(args)
     ms.scan()
-    result = ms.parse_result_xml()
+    ms_result = ms.parse_result_xml()
+    
+    # Nmap: Scan for services of open ports 
+    nm = Nmap(ms_result)
+    result = nm.scan()
 
     return result
 

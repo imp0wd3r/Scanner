@@ -6,3 +6,4 @@ prettytable
 netaddr
 redis
 pymongo
+python-nmap

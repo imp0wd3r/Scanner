@@ -9,7 +9,7 @@ from scanner.libs.request import patch_requests
 from scanner.libs.plugins import get_plugins
 from scanner.libs.targets import get_targets
 from scanner.libs.threads import run_threads
-from scanner.libs.scan.ports import Masscan, Nmap
+from scanner.libs.scan.port import Masscan, Nmap
 from scanner.libs.result import save_result
 
 

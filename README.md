@@ -16,7 +16,7 @@ pip install -r requirements.txt
 在`config.py`中配置[Masscan](https://github.com/robertdavidgraham/masscan)、[Nmap](https://nmap.org/)和[MongoDB](https://www.mongodb.com/)：
 
 ```python
-MASSCAN_BIN = '/opt/masscan/bin/masscan'
+MASSCAN_BIN = '/tmp/masscan/bin/masscan'
 MASSCAN_RESULT_XML = '/tmp/result.xml'
 MASSCAN_RATE = 100
 MASSCAN_RETRIES = 2
@@ -30,6 +30,13 @@ MONGODB_DATABASE = 'scanner'
 MONGODB_PORT_COLLECTION = 'port'
 MONGODB_VULN_COLLECTION = 'vuln'
 MONGODB_SENS_COLLECTION = 'sens'
+```
+
+### Docker
+
+```bash
+docker build -t scanner .
+docker run --name scanner -it -v $PWD:/tmp/Scanner scanner
 ```
 
 ## Usage

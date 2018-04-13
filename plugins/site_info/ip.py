@@ -1,5 +1,5 @@
 import socket
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import requests
 from netaddr import valid_ipv4

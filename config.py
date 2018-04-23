@@ -1,11 +1,11 @@
-MASSCAN_BIN = '/tmp/masscan/bin/masscan'
+MASSCAN_BIN = '/usr/local/bin/masscan'
 MASSCAN_RESULT_XML = '/tmp/ms_result.xml'
-MASSCAN_RATE = 100
+MASSCAN_RATE = 1000
 MASSCAN_RETRIES = 2
-MASSCAN_WAIT = 5
+MASSCAN_WAIT = 10
 
 NMAP_BIN = '/usr/local/bin/nmap'
-NMAP_ARGS = '-sV -sC --host-timeout 30s'
+NMAP_ARGS = '-sV -sC -T4'
 
 MONGODB_URI = 'mongodb://localhost:27017'
 MONGODB_DATABASE = 'scanner'

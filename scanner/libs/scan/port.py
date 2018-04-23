@@ -74,7 +74,7 @@ class Masscan(object):
                     result[ip] = [port]
         except ParseError:
             pass
-        
+
         return result
 
 
@@ -93,6 +93,9 @@ class Nmap(object):
             for host, ports in target.items():
                 self.nm.scan(host, ports, self.nmap_args)
 
+                if host not in self.nm.all_hosts():
+                    continue
+
                 if self.nm[host].setdefault('tcp'):
                     for port, data in self.nm[host]['tcp'].items():
                         self.result.append({
@@ -102,7 +105,7 @@ class Nmap(object):
                             'product': data['product'],
                             'cpe': data['cpe'][7:]
                         })
-                
+
                 if self.nm[host].setdefault('udp'):
                     for port, data in self.nm[host]['udp'].items():
                         self.result.append({
